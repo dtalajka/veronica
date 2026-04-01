@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-service-settings
+  namespace: veronica
+data:
+  settings.json: |
+    {
+        "urls": {
+            "ds": "http://localhost:8000"
+        }, 
+        "connectStrings": {
+            "pg": {
+                "ds" : "host='postgres' dbname='postgres' user='postgres' password='kofolla'"
+            }        
+        }
+    }

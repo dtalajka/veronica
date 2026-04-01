@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-service
+  namespace: veronica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-service
+  template:
+    metadata:
+      labels:
+        app: data-service
+    spec:
+      containers:
+      - name: data-service
+        image: data-service:latest
+        imagePullPolicy: Never
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - name: settings
+          mountPath: /app/settings.json
+          subPath: settings.json
+          readOnly: true
+      volumes:
+      - name: settings
+        configMap:
+          name: data-service-settings

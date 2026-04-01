@@ -1,0 +1,10 @@
+{
+    "urls": {
+        "ds": "http://localhost:8000"
+    }, 
+    "connectStrings": {
+        "pg": {
+            "ds" : "host='postgres' dbname='postgres' user='postgres' password='kofolla'"
+        }        
+    }
+}
