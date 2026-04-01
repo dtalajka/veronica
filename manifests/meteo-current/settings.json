@@ -1,0 +1,31 @@
+{
+    "source": [
+        { 
+            "active": true,
+            "name": "weatherapi",
+            "url": "https://api.weatherapi.com",
+            "headers": {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Key": "698727ba84f84942bd4160100251905"
+            },      
+            "locations": [
+                {
+                    "active": true,
+                    "location": "Bratislava",
+                    "path": "/meteo/sk/bratislava" 
+                },
+                {
+                    "active": true,
+                    "location": "Piestany",
+                    "path": "/meteo/sk/piestany" 
+                }
+            ]
+        }
+    ], 
+    "data": {
+        "postgre": {
+            "connectString" : "host='192.168.0.227' dbname='postgres' user='postgres' password='kofolla'"
+        }        
+    }
+}

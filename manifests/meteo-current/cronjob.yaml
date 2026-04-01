@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: meteo-current
+  namespace: veronica
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            app: meteo-current
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: meteo
+            image: meteo:latest
+            imagePullPolicy: Never
+            terminationMessagePolicy: FallbackToLogsOnError
+            volumeMounts:
+            - name: settings
+              mountPath: /app/settings.json
+              subPath: settings.json
+              readOnly: true
+          volumes:
+          - name: settings
+            configMap:
+              name: meteo-current-settings
