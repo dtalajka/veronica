@@ -1,109 +1,56 @@
 ---
-# Source: meteo-actual/templates/configmap.yaml
+# Source: data-service/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: meteo-actual-settings
+  name: data-service-settings
   namespace: veronica
 data:
-    settings.json: "{\n    \"source\": [\n        { \n            \"active\": true,\n
-      \           \"name\": \"weatherapi\",\n            \"url\": \"https://api.weatherapi.com\",\n
-      \           \"headers\": {\n                \"Content-Type\": \"application/json\",\n
-      \               \"Accept\": \"application/json\",\n                \"Key\": \"698727ba84f84942bd4160100251905\"\n
-      \           },      \n            \"locations\": [\n                {\n                    \"active\":
-      true,\n                    \"location\": \"Bratislava\",\n                    \"path\":
-      \"/meteo/sk/bratislava\" \n                },\n                {\n                    \"active\":
-      true,\n                    \"location\": \"Piestany\",\n                    \"path\":
-      \"/meteo/sk/piestany\" \n                }\n            ]\n        }\n    ], \n
-      \   \"data\": {\n        \"postgre\": {\n            \"connectString\" : \"host='192.168.0.227'
+    settings.json: "{\n    \"urls\": {\n        \"ds\": \"http://localhost:8000\"\n    },
+      \n    \"connectStrings\": {\n        \"pg\": {\n            \"ds\" : \"host='postgres'
       dbname='postgres' user='postgres' password='kofolla'\"\n        }        \n    }\n}"
 ---
-# Source: meteo-actual/templates/cronjob.yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: meteo-actual
-  namespace: veronica
-spec:
-  schedule: "0 * * * *"
-  concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 3
-  jobTemplate:
-    spec:
-      ttlSecondsAfterFinished: 600
-      template:
-        metadata:
-          labels:
-            app: meteo-actual
-        spec:
-          restartPolicy: Never
-          containers:
-          - name: meteo
-            image: meteo:latest
-            imagePullPolicy: Never
-            terminationMessagePolicy: FallbackToLogsOnError
-            volumeMounts:
-            - name: settings
-              mountPath: /app/settings.json
-              subPath: settings.json
-              readOnly: true
-          volumes:
-          - name: settings
-            configMap:
-              name: meteo-actual-settings
----
-# Source: meteo-prediction/templates/configmap.yaml
+# Source: data-service/templates/service.yaml
 apiVersion: v1
-kind: ConfigMap
+kind: Service
 metadata:
-  name: meteo-prediction-settings
-  namespace: veronica
-data:
-    settings.json: "{\n    \"source\": [\n        { \n            \"active\": true,\n
-      \           \"name\": \"yrNo\",\n            \"headers\": {\n                \"User-Agent\":
-      \"XxForYy\"        \n            },\n            \"url\": \"https://api.met.no\",\n
-      \           \"locations\": [\n                {\n                    \"active\":
-      true,\n                    \"lat\": 48.15342341176858, \n                    \"lon\":
-      17.1167,\n                    \"path\": \"/meteo/sk/bratislava/prediction\",\n                    \"name\":
-      \"Bratislava Slovakia\"\n                },\n                {\n                    \"active\":
-      true,\n                    \"lat\": 48.6, \n                    \"lon\": 17.8333,\n
-      \                   \"path\": \"/meteo/sk/piestany/prediction\",\n                    \"name\":
-      \"Piestany Slovakia\"\n                }\n            ]\n        }\n    ], \n    \"data\":
-      {\n        \"postgre\": {\n            \"connectString\" : \"host='192.168.0.227'
-      dbname='postgres' user='postgres' password='kofolla'\"\n        }        \n    }\n}"
----
-# Source: meteo-prediction/templates/cronjob.yaml
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: meteo-prediction
+  name: data-service
   namespace: veronica
 spec:
-  schedule: "0 * * * *"
-  concurrencyPolicy: Forbid
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 3
-  jobTemplate:
+  selector:
+    app: data-service
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: LoadBalancer  # Use LoadBalancer or NodePort if external access is needed
+---
+# Source: data-service/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-service
+  namespace: veronica
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-service
+  template:
+    metadata:
+      labels:
+        app: data-service
     spec:
-      ttlSecondsAfterFinished: 600
-      template:
-        metadata:
-          labels:
-            app: meteo-prediction
-        spec:
-          restartPolicy: Never
-          containers:
-          - name: meteo
-            image: meteo:latest
-            imagePullPolicy: Never
-            terminationMessagePolicy: FallbackToLogsOnError
-            volumeMounts:
-            - name: settings
-              mountPath: /app/settings.json
-              subPath: settings.json
-              readOnly: true
-          volumes:
-          - name: settings
-            configMap:
-              name: meteo-prediction-settings
+      containers:
+      - name: data-service
+        image: data-service:latest
+        imagePullPolicy: Never
+        terminationMessagePolicy: FallbackToLogsOnError
+        volumeMounts:
+        - name: settings
+          mountPath: /app/settings.json
+          subPath: settings.json
+          readOnly: true
+      volumes:
+      - name: settings
+        configMap:
+          name: data-service-settings

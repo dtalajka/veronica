@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: data-service
-  namespace: veronica
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: data-service
+      app: {{ .Chart.Name }}
   template:
     metadata:
       labels:
-        app: data-service
+        app: {{ .Chart.Name }}
     spec:
       containers:
       - name: data-service
@@ -26,4 +26,4 @@ spec:
       volumes:
       - name: settings
         configMap:
-          name: data-service-settings
+          name: {{ .Chart.Name }}-settings
