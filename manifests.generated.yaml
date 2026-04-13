@@ -1,29 +1,28 @@
 ---
-# Source: meteo-prediction/templates/configmap.yaml
+# Source: meteo-actual/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: meteo-prediction-settings
+  name: meteo-actual-settings
   namespace: veronica
 data:
     settings.json: "{\n    \"source\": [\n        { \n            \"active\": true,\n
-      \           \"name\": \"yrNo\",\n            \"headers\": {\n                \"User-Agent\":
-      \"XxForYy\"        \n            },\n            \"url\": \"https://api.met.no\",\n
-      \           \"locations\": [\n                {\n                    \"active\":
-      true,\n                    \"lat\": 48.15342341176858, \n                    \"lon\":
-      17.1167,\n                    \"path\": \"/meteo/sk/bratislava/prediction\",\n                    \"name\":
-      \"Bratislava Slovakia\"\n                },\n                {\n                    \"active\":
-      true,\n                    \"lat\": 48.6, \n                    \"lon\": 17.8333,\n
-      \                   \"path\": \"/meteo/sk/piestany/prediction\",\n                    \"name\":
-      \"Piestany Slovakia\"\n                }\n            ]\n        }\n    ], \n    \"data\":
-      {\n        \"postgre\": {\n            \"connectString\" : \"host='192.168.0.227'
+      \           \"name\": \"weatherapi\",\n            \"url\": \"https://api.weatherapi.com\",\n
+      \           \"headers\": {\n                \"Content-Type\": \"application/json\",\n
+      \               \"Accept\": \"application/json\",\n                \"Key\": \"698727ba84f84942bd4160100251905\"\n
+      \           },      \n            \"locations\": [\n                {\n                    \"active\":
+      true,\n                    \"location\": \"Bratislava\",\n                    \"path\":
+      \"/meteo/sk/bratislava\" \n                },\n                {\n                    \"active\":
+      true,\n                    \"location\": \"Piestany\",\n                    \"path\":
+      \"/meteo/sk/piestany\" \n                }\n            ]\n        }\n    ], \n
+      \   \"data\": {\n        \"postgre\": {\n            \"connectString\" : \"host='192.168.0.227'
       dbname='postgres' user='postgres' password='kofolla'\"\n        }        \n    }\n}"
 ---
-# Source: meteo-prediction/templates/cronjob.yaml
+# Source: meteo-actual/templates/cronjob.yaml
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: meteo-prediction
+  name: meteo-actual
   namespace: veronica
 spec:
   schedule: "0 * * * *"
@@ -36,7 +35,7 @@ spec:
       template:
         metadata:
           labels:
-            app: meteo-prediction
+            app: meteo-actual
         spec:
           restartPolicy: Never
           containers:
@@ -52,4 +51,4 @@ spec:
           volumes:
           - name: settings
             configMap:
-              name: meteo-prediction-settings
+              name: meteo-actual-settings
