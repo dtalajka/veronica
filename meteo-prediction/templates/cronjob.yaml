@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: meteo-prediction
-  namespace: veronica
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace }}
 spec:
   schedule: "0 * * * *"
   concurrencyPolicy: Forbid
@@ -14,7 +14,7 @@ spec:
       template:
         metadata:
           labels:
-            app: meteo-prediction
+            app: {{ .Chart.Name }}
         spec:
           restartPolicy: Never
           containers:
@@ -30,4 +30,4 @@ spec:
           volumes:
           - name: settings
             configMap:
-              name: meteo-prediction-settings
+              name: {{ .Chart.Name }}-settings
